@@ -129,10 +129,14 @@ public class DirectedGraph {
     }
 
     public boolean cycleDetection(){
-        Set<Node> sharedNodeSet = new HashSet<>();
+        Set<Node> remainingSet = new HashSet<>();
+        Set<Node> visitingSet = new HashSet<>();
+        Set<Node> visitedSet = new HashSet<>();
 
-        for (var node : adjacencyMap.keySet()) {
-            if (cycleDetection(node, sharedNodeSet, new HashSet<>()))
+        remainingSet.addAll(nodeMap.values());
+
+        while (!remainingSet.isEmpty()){
+            if (cycleDetection(remainingSet.iterator().next(), remainingSet, visitingSet, visitedSet))
                 return true;
         }
 
@@ -205,17 +209,24 @@ public class DirectedGraph {
         itemStack.addLast(currentNode.item);
     }
 
-    private boolean cycleDetection(Node currentNode, Set<Node> sharedNodeSet, Set<Node> privateNodeSet){
-        if (!privateNodeSet.add(currentNode))
-            return true;
-
-        if (!sharedNodeSet.add(currentNode))
-            return false;
+    private boolean cycleDetection(Node currentNode, Set<Node> remainingSet, Set<Node> visitingSet,
+                                   Set<Node> visitedSet){
+        remainingSet.remove(currentNode);
+        visitingSet.add(currentNode);
 
         for (var node : adjacencyMap.get(currentNode)) {
-            if (cycleDetection(node, sharedNodeSet, privateNodeSet))
+            if (visitedSet.contains(node))
+                continue;
+
+            if (visitingSet.contains(node))
+                return true;
+
+            if (cycleDetection(node, remainingSet, visitingSet, visitedSet))
                 return true;
         }
+
+        visitingSet.remove(currentNode);
+        visitedSet.add(currentNode);
 
         return false;
     }
